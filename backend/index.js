@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { loadModel, processString } from './embed/embed.js';
 let modelProcessor, modelTextModel;
-const PORT = 3000;
+const PORT = 80;
 
 const app = express();
 app.use(cors());
