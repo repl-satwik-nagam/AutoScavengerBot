@@ -5,194 +5,46 @@ import { DashboardWidgetWrapper } from "../atoms/DashboardWidgetWrapper";
 import { DashboardInfo } from "../molecules/DashboardInfo";
 import { DashboardSummary } from "../molecules/DashboardSummary";
 import { Box } from "@mui/system";
+import { GoogleMap } from "@react-google-maps/api";
+import MapRestriction = google.maps.MapRestriction;
 
-interface HomeProps {
-  userName?: string;
-}
+const MAP_RESTRICTION: MapRestriction = {
+  latLngBounds: {
+    north: 85,
+    south: -85,
+    west: -180,
+    east: 180,
+  },
+  strictBounds: true,
+};
+
+import LatLngLiteral = google.maps.LatLngLiteral;
+
+const DEFAULT_MAP_CENTER: LatLngLiteral = {
+  lat: 51.045,
+  lng: -114.072,
+};
+const DEFAULT_MAP_ZOOM = 11;
+
 
 /* see https://mui.com/styles/basics/ */
-const useStyles = makeStyles({
-  scrollableContent: {
-    [theme.breakpoints.down("sm")]: {
-      maxHeight: "calc(100vh - 202.5px)",
-      overflow: "auto",
-    },
-  },
-});
 
-export const Dashboard: React.FC<HomeProps> = (props) => {
-  const styles = useStyles();
 
-  // Date is pinned to the date of the capstone fair so visitors see what the judges saw.
-  // The time of day is dynamic.
-  const date = new Date();
-  date.setFullYear(2022, 3, 5);
-
-  const [editDashboardMode, setEditDashboardMode] = useState(false);
-
-  // Is there a way to just leave this state as empty?
-  // If we do leave the state as empty, it throws an error saying that every mapped object
-  // in different components need to have keys
-  const [summaryWidgets, setSummaryWidgets] = useState([
-    {
-      summaryName: "New Location Updates",
-      summary: "NewLocationUpdates",
-    },
-    {
-      summaryName: "New Incidents",
-      summary: "NewIncidents",
-    },
-    {
-      summaryName: "New Gas Readings",
-      summary: "NewGasReadings",
-    },
-  ]);
-
-  // Is there a way to just leave this state as empty?
-  // If we do leave the state as empty, it throws an error saying that every mapped object
-  // in different components need to have keys
-  const [inactiveWidgets, setInactiveWidgets] = useState([
-    {
-      widgetName: "Hazardous Areas",
-      widget: "HazardMap",
-    },
-    {
-      widgetName: "Incidents Bar Graph",
-      widget: "IncidentsBarGraph",
-    },
-    {
-      widgetName: "Gases Map",
-      widget: "GasesMap",
-    },
-  ]);
-
-  // Is there a way to just leave this state as empty?
-  // If we do leave the state as empty, it throws an error saying that every mapped object
-  // in different components need to have keys
-  const [activeWidgets, setActiveWidgets] = useState([
-    {
-      widgetName: "Incidents Map",
-      widget: "IncidentsMap",
-    },
-    {
-      widgetName: "Travel History",
-      widget: "TravelMap",
-    },
-  ]);
-
-  const saveState = () => {
-    const state = JSON.stringify({
-      summaryWidgets: summaryWidgets,
-      inactiveWidgets: inactiveWidgets,
-      activeWidgets: activeWidgets,
-    });
-    localStorage.setItem("dashboardState", state);
-  };
-
-  const loadState = () => {
-    const dashboardState = localStorage.getItem("dashboardState");
-    if (dashboardState === null) {
-      setSummaryWidgets([
-        {
-          summaryName: "New Location Updates",
-          summary: "NewLocationUpdates",
-        },
-        {
-          summaryName: "New Incidents",
-          summary: "NewIncidents",
-        },
-        {
-          summaryName: "New Gas Readings",
-          summary: "NewGasReadings",
-        },
-      ]);
-      setInactiveWidgets([
-        {
-          widgetName: "Hazardous Areas",
-          widget: "HazardMap",
-        },
-        {
-          widgetName: "Incidents Bar Graph",
-          widget: "IncidentsBarGraph",
-        },
-        {
-          widgetName: "Gases Map",
-          widget: "GasesMap",
-        },
-      ]);
-      setActiveWidgets([
-        {
-          widgetName: "Incidents Map",
-          widget: "IncidentsMap",
-        },
-        {
-          widgetName: "Travel History",
-          widget: "TravelMap",
-        },
-      ]);
-    } else {
-      const result = JSON.parse(dashboardState);
-      setSummaryWidgets(result["summaryWidgets"]);
-      setInactiveWidgets(result["inactiveWidgets"]);
-      setActiveWidgets(result["activeWidgets"]);
-    }
-  };
-
-  useEffect(() => loadState(), []);
-  useEffect(
-    () => saveState(),
-    [editDashboardMode, summaryWidgets, activeWidgets]
-  );
-
-  const dashboardEditToggle = () => {
-    setEditDashboardMode((prevEditDashboardMode) => !prevEditDashboardMode);
-  };
-
-  const addWidget = (selectedWidget: any) => {
-    setActiveWidgets([...activeWidgets, selectedWidget]);
-
-    const array = [...inactiveWidgets];
-    array.splice(inactiveWidgets.indexOf(selectedWidget), 1);
-    setInactiveWidgets(array);
-  };
-
-  const removeWidget = (selectedWidget: any) => {
-    setInactiveWidgets([...inactiveWidgets, selectedWidget]);
-
-    const array = [...activeWidgets];
-    array.splice(activeWidgets.indexOf(selectedWidget), 1);
-    setActiveWidgets(array);
-  };
+export const Dashboard = () => {
 
   return (
-    <>
-      <DashboardInfo
-        activeWidgetState={activeWidgets}
-        inactiveWidgetState={inactiveWidgets}
-        addWidget={addWidget}
-        userName={props.userName}
-        editDashboardMode={editDashboardMode}
-        setEditDashboardMode={dashboardEditToggle}
-        date={date}
-      />
-      <div className={styles.scrollableContent}>
-        <Box sx={{ height: { xs: "16px", sm: 0 } }} />
-        <DashboardSummary
-          summaryWidgets={summaryWidgets}
-          editSummaryWidgets={setSummaryWidgets}
-          editDashboardMode={editDashboardMode}
-          saveState={saveState}
-          date={date}
-        />
-        <DashboardWidgetWrapper
-          widgetState={activeWidgets}
-          setWidgetState={setActiveWidgets}
-          removeWidget={removeWidget}
-          editDashboardMode={editDashboardMode}
-          saveState={saveState}
-          date={date}
-        />
-      </div>
-    </>
+    <GoogleMap
+      mapContainerStyle={{
+            height: "100%",
+            width: "100%",
+          }}
+          options={{
+            gestureHandling: "greedy",
+            restriction: MAP_RESTRICTION,
+          }}
+          zoom={DEFAULT_MAP_ZOOM}
+          center={DEFAULT_MAP_CENTER}
+          >
+    </GoogleMap>
   );
 };
