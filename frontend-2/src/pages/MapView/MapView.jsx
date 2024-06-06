@@ -14,7 +14,7 @@ import { CircularProgress } from "@mui/material";
 const MapView = ({}) => {
   const [, setMarkers] = useState([]);
   const [markersData, setMarkersData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const calgaryCoords = [-114.0719, 51.0547];
   const [searchText, setSearchText] = useState("");
   const [toastOpen, setToastOpen] = React.useState(false);
@@ -63,8 +63,6 @@ const MapView = ({}) => {
   };
 
   useEffect(() => {
-    if (markersData.length === 0) return;
-
     const map = new mapboxgl.Map({
       container: "map",
       style: "mapbox://styles/mapbox/light-v10",
@@ -74,6 +72,17 @@ const MapView = ({}) => {
 
     map.on("load", () => {
       map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+      map.addControl(
+        new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            // When active the map will receive updates to the device's location as it changes.
+            trackUserLocation: true,
+            // Draw an arrow next to the location dot to indicate which direction the device is heading.
+            showUserHeading: true
+        })
+    );
 
       const newMarkers = [];
       for (const markerData of markersData) {
