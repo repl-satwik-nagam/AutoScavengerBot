@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { loadModel, processString, searchPinecone } from './embed/embed.js';
+import { loadModel, searchPinecone } from './embed/embed.js';
 let modelProcessor, modelTextModel;
 const PORT = 80;
 
@@ -15,8 +15,6 @@ app.get('/health',(req,res)=>{
 
 app.get('/findImageAndCoordinates',async(req, res)=>{
     const { queryString } = req.query;
-    // const embedding = await processString(modelProcessor, modelTextModel,queryString);
-    // console.log(embedding);
     const topK = 3;
     const apiKey = "f242dfba-6a9a-403b-8a28-50b950a5dfda";
     const output = await searchPinecone(modelProcessor, modelTextModel, queryString, topK, apiKey);
@@ -29,4 +27,4 @@ app.listen(PORT, async() => {
     modelProcessor = processor;
     modelTextModel = text_model;
     console.log(`Listening on port ${PORT}`);
-})
+});

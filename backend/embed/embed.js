@@ -28,7 +28,11 @@ export async function processString(processor, text_model, string) {
     });
 
     const { text_embeds } = await text_model(text_inputs);
-    return text_embeds.data;
+    return text_embeds?.data;
+}
+
+function generateUrl(id){
+    return `https://autoscavenger.s3.us-west-2.amazonaws.com/${id}`;
 }
 
 export async function searchPinecone(processor, text_model, query, topK, apiKey) {
@@ -43,6 +47,10 @@ export async function searchPinecone(processor, text_model, query, topK, apiKey)
         includeValues: false,
         includeMetadata: true,
       });
-    return results;
+    return results?.matches?.map(({id, metadata})=>({
+        longitude: metadata?.latitude,
+        latitude: metadata?.longitude,
+        url: generateUrl(id)
+    }));
 }
 
