@@ -87,23 +87,28 @@ const MapView = ({}) => {
 
       const newMarkers = [];
       for (const markerData of markersData) {
+        // Create a HTML element for each feature
+        const el = document.createElement('div');
+        el.className = 'marker';
+        el.style.backgroundImage = `url(${markerData.url})`;
+
         const popup = new mapboxgl.Popup({
-          maxWidth: "400px",
+          maxWidth: "800px",
+          maxHeight: "800px",
           closeButton: false,
         }).setHTML(`
-          <div class="popup-card">
+          <div class="popup-card" style="text-align: center;">
             <img src="${markerData.url}" alt="picture" class="popup-image" />
-            <div class="popup-content">
-              <h2 style="margin: 0px">Location</h2>
-              <p style="margin: 0px; font-size: 14px; color: #979797;">
-                Coordinates: ${markerData.latitude}, ${markerData.longitude}
-              </p>
-            </div>
+          </div>
+          <div class="popup-content" style="text-align: center;">
+            <p style="margin: 0px; font-size: 14px; color: #979797;">
+              Coordinates: ${markerData.latitude}, ${markerData.longitude}
+            </p>
           </div>
         `);
-        const marker = new mapboxgl.Marker({
-          color: "red",
-        })
+
+        // Make a marker for each feature and add to the map
+        const marker = new mapboxgl.Marker(el)
           .setLngLat([markerData.latitude, markerData.longitude])
           .setPopup(popup)
           .addTo(map);
