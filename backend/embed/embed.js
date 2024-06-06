@@ -4,6 +4,9 @@ import {
     env as transformersEnv,
   } from "@xenova/transformers";
 
+import { Pinecone } from "@pinecone-database/pinecone";
+
+
 export async function loadModel() {
     const processor = await AutoTokenizer.from_pretrained(
         "Xenova/clip-vit-base-patch16"
@@ -33,14 +36,13 @@ export async function searchPinecone(processor, text_model, query, topK, apiKey)
     const embeddings = await processString(processor, text_model, query);
     console.log("Embeddings: ", embeddings);
 
-    const index = pc.index("photo-search");
-    console.log("Filter: ", filter.value);
+    const index = pc.index("calgary-street-view");
     const results = await index.query({
         vector: Array.from(embeddings),
         topK: Number(topK),
         includeValues: false,
-        filter: filter.value,
-    });
+        includeMetadata: true,
+      });
     return results;
 }
 
