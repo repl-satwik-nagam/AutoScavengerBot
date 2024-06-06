@@ -127,11 +127,6 @@ const MapView = ({}) => {
           );
           popupElement.addEventListener("click", (e) => {
             e.preventDefault();
-            if (markerData.status === "SIGHTING") {
-              openDialog(markerData.id);
-            } else {
-              window.location.href = `/posts/${markerData.id}`;
-            }
           });
         });
       }
