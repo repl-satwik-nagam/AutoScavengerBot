@@ -49,10 +49,6 @@ const MapView = ({}) => {
   const [toastSeverity, setToastSeverity] = React.useState("success");
   const [toastMessage, setToastMessage] = React.useState("");
 
-  const openDialog = (id) => {
-    setOpen(true);
-    setSelectedId(id);
-  };
 
   const handleToastOpen = (severity, message) => {
     setToastSeverity(severity);
@@ -132,7 +128,6 @@ const MapView = ({}) => {
           popupElement.addEventListener("click", (e) => {
             e.preventDefault();
             if (markerData.status === "SIGHTING") {
-              setSelectedSighting(markerData);
               openDialog(markerData.id);
             } else {
               window.location.href = `/posts/${markerData.id}`;
