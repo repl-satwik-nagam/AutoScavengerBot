@@ -26,6 +26,7 @@ const MapView = ({}) => {
   const [loading, setLoading] = useState(false);
   const calgaryCoords = [-114.0719, 51.0547];
   const [searchText, setSearchText] = useState("");
+  const [searchNum, setSearchNum] = useState(3);
   const [toastOpen, setToastOpen] = React.useState(false);
   const [toastSeverity, setToastSeverity] = React.useState("success");
   const [toastMessage, setToastMessage] = React.useState("");
@@ -44,11 +45,11 @@ const MapView = ({}) => {
   };
 
   const handleSearch = () => {
-    console.log("enter hit")
-    if(!searchText.match("[a-zA-Z]+")){
+    console.log(searchNum);
+    if(!searchText.match("[a-zA-Z]+") || searchNum < 1 || searchNum > 20){
       handleToastOpen("error", "Please input a valid search")
     }else {
-      fetchMarkersData(searchText);
+      fetchMarkersData();
     }
   }
 
@@ -57,10 +58,11 @@ const MapView = ({}) => {
     "pk.eyJ1IjoibGF1cnkyMDAxIiwiYSI6ImNsdTVzaWh3djBrOG8ya3FybnJpZmNlY2QifQ.56T13WpUblGuqpzfD6n_SA";
 
 
-  const fetchMarkersData = async (query) => {
+  const fetchMarkersData = async () => {
     setLoading(true);
+    console.log(searchNum);
     try {
-      const response = await fetch(`http://autoscavengerlb-706009455.us-west-2.elb.amazonaws.com/findImageAndCoordinates?queryString=${query}`);
+      const response = await fetch(`http://autoscavengerlb-706009455.us-west-2.elb.amazonaws.com/findImageAndCoordinates?queryString=${searchText}&numberOfMatches=${searchNum}`);
       const data = await response.json();
       console.log(data);
       setMarkersData(data);
@@ -181,31 +183,42 @@ const MapView = ({}) => {
         border: "2px solid black",
       }}
     />
-    <BaseNumberInput
-    aria-label="Demo number input"
+    <TextField
+    sx={{
+      marginLeft: "10px",
+      input: {
+        paddingLeft: "20px",
+        paddingRight: "20px",
+        color: "black",
+        "&::placeholder": {
+          opacity: 0.8,
+        },
+      },
+      bgcolor: "white",
+      color: "black",
+      width: "30%",
+      marginTop: "10px",
+      "& fieldset": { border: "none" },
+      border: "2px solid black",
+      borderRadius: "5rem",
+    }}
+    onChange={(e) => setSearchNum(e.target.valueAsNumber)}
     placeholder="# of Results"
-    min={1}
-    max={10}
-    sx={{ marginLeft: "10px", marginRight: "10px", width: "30%", zIndex: "99" }} // Add margin to separate from the text field
-      slots={{
-        root: StyledInputRoot,
-        input: StyledInput,
-        incrementButton: StyledButton,
-        decrementButton: StyledButton,
-      }}
-      slotProps={{
-        incrementButton: {
-          children: <AddIcon fontSize="small" />,
-          className: 'increment',
-        },
-        decrementButton: {
-          children: <RemoveIcon fontSize="small" />,
-        },
-      }}
-    />
-
-    
-    <Button variant="contained" color="primary" onClick={handleSearch} sx={{ marginLeft: "10px", marginRight: "10px", width: "10%" }}>
+    value={searchNum}
+          id="standard-number"
+          label="# of Results"
+          type="number"
+          InputProps={{ inputProps: { min: 1, max: 20 }}}
+          variant="standard"
+          InputLabelProps={{
+            shrink: true,
+            sx: {
+             left: "1rem",
+             right: "1rem",
+            }
+          }}
+        />
+    <Button variant="contained" color="primary" onClick={handleSearch} sx={{ marginLeft: "10px", marginRight: "5px", marginTop: "10px", width: "10%" }}>
       Submit
     </Button>
   </div>
