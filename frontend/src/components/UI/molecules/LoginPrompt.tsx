@@ -1,5 +1,5 @@
 import { FetchResult, useQuery } from "@apollo/client";
-import { Divider, TextField } from "@mui/material";
+import { Snackbar, TextField, Alert } from "@mui/material";
 import { StyledEngineProvider } from "@mui/material/styles";
 import { makeStyles } from "@mui/styles";
 import { Box } from "@mui/system";
@@ -63,94 +63,32 @@ const useStyles = makeStyles({
 
 export const LoginPrompt: React.FC = () => {
   const styles = useStyles();
-
+  const [error, setError] = useState<boolean>(false);
   // eslint-disable-next-line prefer-const
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [invalidCredentials, setInvalidCredentials] = useState(false);
 
-  const { data: usersData } = useQuery(GET_USERS);
-  let users: User[] = usersData?.userAccounts ?? [];
-  users = Array.from(users).sort((a, b) => (a.name > b.name ? 1 : -1));
-
-  const [login] = useLogin();
   const history = useHistory();
 
-  const loginSuccess = useCallback(
-    (user: User, result: FetchResult<LoginData>) => {
-      const token =
-        result.data?.login ??
-        (() => {
-          throw new Error("token missing");
-        })();
-      setCurrentUser(user);
-      setToken(token);
+  const attemptQuery = () => {
+    if(!email.match("[a-zA-Z]+"))
+      setError(true);
+    else
       history.push("/dashboard");
-    },
-    [history]
-  );
-
-  const loginFailed = useCallback(() => {
-    setInvalidCredentials(true);
-  }, []);
-
-  const attemptLogin = useCallback(
-    (creds: Creds | undefined = undefined) => {
-      const user = users.find((u) => u.email === (creds?.email ?? email));
-      if (!user) {
-        loginFailed();
-      } else {
-        login({
-          variables: {
-            userAccountId: user.id,
-            password: creds?.password ?? password,
-          },
-        }).then((result) => loginSuccess(user, result), loginFailed);
-      }
-    },
-    [users, loginSuccess, loginFailed, email, password]
-  );
-
-  const onDemoUserLogin = useCallback(() => {
-    if (users.length == 0) {
-      alert(
-        "Users did not load. Please refresh, wait a moment, and try again."
-      );
-    } else {
-      // Assume demo account is the first in users and has no password.
-      const user = users[0];
-      attemptLogin({ email: user.email, password: "" });
-    }
-  }, [users, attemptLogin]);
-
-  const emailSelectLabel = "Email";
-  const passwordSelectLabel = "Password";
-
-  const helperText = invalidCredentials
-    ? "Incorrect email or password."
-    : undefined;
-
-  const loading = users.length === 0;
+  }
 
   return (
     <StyledEngineProvider injectFirst>
       <Box className={styles.loginBox}>
         <div className={styles.loginDiv}>
-          <img src={Logo} alt="SafetyWare" />
-          <LoginButton
-            text="Log In with Demo Account"
-            onClick={onDemoUserLogin}
-            loading={loading}
-          />
-          <Divider className={styles.loginOptionDivider}>OR</Divider>
+          <img src={Logo} alt="Auto-Scavenger" />
+          <h3 style ={{color: "white"}}>Enter your scavenger hunt objective to find the location in Downtown Calgary</h3>
           <TextField
             className={styles.input}
             type="text"
-            label={emailSelectLabel}
+            label="Enter Your Objective"
             variant="outlined"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            helperText={helperText}
             InputLabelProps={{
               style: { color: "white" },
             }}
@@ -162,27 +100,14 @@ export const LoginPrompt: React.FC = () => {
             }}
           />
           <div style={{ height: "24px" }} />
-          <TextField
-            className={styles.input}
-            type="password"
-            label={passwordSelectLabel}
-            variant="outlined"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            helperText={helperText}
-            InputLabelProps={{
-              style: { color: "white" },
-            }}
-            InputProps={{
-              style: { color: "white" },
-            }}
-            FormHelperTextProps={{
-              style: { color: "white" },
-            }}
-          />
-          <LoginButton text="Log In" onClick={attemptLogin} loading={loading} />
+          <LoginButton text="Submit" onClick={attemptQuery} />
         </div>
       </Box>
+      <Snackbar open={error} autoHideDuration={3000} sx={{ width: '90%'}}>
+            <Alert severity={"error"} sx={{ width: '100%'}}>
+              Please enter a valid text.
+            </Alert>
+      </Snackbar>
     </StyledEngineProvider>
   );
 };

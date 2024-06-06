@@ -62,8 +62,8 @@ export const Pages: React.FC = () => {
                 <Page
                   exact
                   path="/dashboard"
-                  title="SafetyWare | Dashboard"
-                  render={() => <Dashboard userName={user?.name} />}
+                  title="Query Result"
+                  render={() => <Dashboard />}
                 />
                 <Page
                   exact

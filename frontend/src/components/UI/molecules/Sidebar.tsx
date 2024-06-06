@@ -141,43 +141,9 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
   const drawer = (
     <div className={styles.sidebarDiv}>
       <Toolbar>
-        <img className={styles.sidebarlogo} src={Logo} alt="SafetyWare" />
+        <img className={styles.sidebarlogo} src={Logo} alt="AutoScavenger" />
       </Toolbar>
-      <Box className={styles.sidebarMenu}>
-        <List>
-          {sidebarHeaderItems.map((sidebarItem) => (
-            <ListItemButton
-              component={NavLink}
-              key={sidebarItem.text}
-              to={sidebarItem.link}
-              exact
-              activeClassName={styles.sidebarItemSelected}
-              onClick={!mobile ? undefined : handleDrawerToggle}
-            >
-              <ListItemIcon>
-                <sidebarItem.icon />
-              </ListItemIcon>
-              <ListItemText primary={sidebarItem.text} />
-            </ListItemButton>
-          ))}
-        </List>
-      </Box>
       <List className={styles.sidebarFooter}>
-        <ListItemButton
-          component={NavLink}
-          to="/profile"
-          exact
-          activeClassName={styles.sidebarItemSelected}
-          onClick={!mobile ? undefined : handleDrawerToggle}
-        >
-          <div className={styles.sidebarUser}>
-            <SidebarUserPicture
-              userPhoto={props.userPhoto}
-              userName={props.userName}
-            />
-            <SidebarUserName userName={props.userName} />
-          </div>
-        </ListItemButton>
         <ListItemButton
           onClick={() => {
             if (!mobile) {
@@ -189,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
-          <ListItemText primary="Log Out" />
+          <ListItemText primary="New Query" />
         </ListItemButton>
       </List>
     </div>
