@@ -11,34 +11,6 @@ import ToastNotification from "../../components/ToastNotification/ToastNotificai
 
 import { CircularProgress } from "@mui/material";
 
-const geojson = {
-  type: "FeatureCollection",
-  features: [
-    {
-      type: "Feature",
-      geometry: {
-        type: "Point",
-        coordinates: [-114.081336, 51.055725],
-      },
-      properties: {
-        title: "Test Area #1",
-        description: "This is test #1",
-      },
-    },
-    {
-      type: "Feature",
-      geometry: {
-        type: "Point",
-        coordinates: [-114.057816, 51.05013],
-      },
-      properties: {
-        title: "Test Area #2",
-        description: "This is test #2",
-      },
-    },
-  ],
-};
-
 const MapView = ({}) => {
   const [, setMarkers] = useState([]);
   const [markersData, setMarkersData] = useState([]);
@@ -48,7 +20,9 @@ const MapView = ({}) => {
   const [toastOpen, setToastOpen] = React.useState(false);
   const [toastSeverity, setToastSeverity] = React.useState("success");
   const [toastMessage, setToastMessage] = React.useState("");
-
+  const [open, setOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [selectedSighting, setSelectedSighting] = useState(null);
 
   const handleToastOpen = (severity, message) => {
     setToastSeverity(severity);
@@ -65,21 +39,32 @@ const MapView = ({}) => {
     if(!searchText.match("[a-zA-Z]+")){
       handleToastOpen("error", "Please input a valid search")
     }else {
-      //connect to backend
+      fetchMarkersData(searchText);
     }
   }
-
-  useEffect(() => {}, []);
-  const handleChange = (e) => {
-    setSearchText(e.target.value.toLowerCase());
-  };
 
   mapboxgl.accessToken =
     process.env.REACT_APP_MAPBOX_API_KEY ||
     "pk.eyJ1IjoibGF1cnkyMDAxIiwiYSI6ImNsdTVzaWh3djBrOG8ya3FybnJpZmNlY2QifQ.56T13WpUblGuqpzfD6n_SA";
 
-  // Initialize the map
+
+  const fetchMarkersData = async (query) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://autoscavengerlb-706009455.us-west-2.elb.amazonaws.com/findImageAndCoordinates?queryString=${query}`);
+      const data = await response.json();
+      console.log(data);
+      setMarkersData(data);
+      setLoading(false);
+    } catch (error) {
+      handleToastOpen("error", "Failed to fetch data");
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
+    if (markersData.length === 0) return;
+
     const map = new mapboxgl.Map({
       container: "map",
       style: "mapbox://styles/mapbox/light-v10",
@@ -88,50 +73,36 @@ const MapView = ({}) => {
     });
 
     map.on("load", () => {
-      // Add navigation controls
       map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
 
-      // Add markers
       const newMarkers = [];
-      for (const markerData of geojson.features) {
+      for (const markerData of markersData) {
         const popup = new mapboxgl.Popup({
           maxWidth: "400px",
           closeButton: false,
         }).setHTML(`
-          <div id="popup-${markerData.id}" class="popup-card">
-            <img src="${markerData.image}" alt="picture" class="popup-image" />
+          <div class="popup-card">
+            <img src="${markerData.url}" alt="picture" class="popup-image" />
             <div class="popup-content">
-              ${`<h2 style="margin: 0px">${markerData.properties.title}</h2>`}
-              <Typography style="margin: 0px; font-size: 14px; color: #979797;">
-                ${markerData.properties.description}
-              </Typography>
+              <h2 style="margin: 0px">Location</h2>
+              <p style="margin: 0px; font-size: 14px; color: #979797;">
+                Coordinates: ${markerData.latitude}, ${markerData.longitude}
+              </p>
             </div>
           </div>
-      `);
-
+        `);
         const marker = new mapboxgl.Marker({
           color: "red",
         })
-          .setLngLat([
-            markerData.geometry.coordinates[0],
-            markerData.geometry.coordinates[1],
-          ])
+          .setLngLat([markerData.latitude, markerData.longitude])
           .setPopup(popup)
           .addTo(map);
 
         newMarkers.push(marker);
-
-        popup.on("open", () => {
-          const popupElement = document.getElementById(
-            `popup-${markerData.id}`
-          );
-          popupElement.addEventListener("click", (e) => {
-            e.preventDefault();
-          });
-        });
       }
       setMarkers(newMarkers);
     });
+
     return () => map.remove();
   }, [markersData]);
 
@@ -157,7 +128,7 @@ const MapView = ({}) => {
           if (e.key === "Enter") handleSearch();
         }}
         className="search_bar"
-        onChange={handleChange}
+        onChange={(e) => setSearchText(e.target.value.toLowerCase())}
         focused
         id="search-text"
         InputProps={{
