@@ -14,8 +14,8 @@ app.get('/health',(req,res)=>{
 });
 
 app.get('/findImageAndCoordinates',async(req, res)=>{
-    const { queryString } = req.query;
-    const topK = 3;
+    const { queryString, numberOfMatches } = req.query;
+    const topK = Number.parseInt(numberOfMatches) || 3;
     const apiKey = "f242dfba-6a9a-403b-8a28-50b950a5dfda";
     const output = await searchPinecone(modelProcessor, modelTextModel, queryString, topK, apiKey);
     console.log(output);
