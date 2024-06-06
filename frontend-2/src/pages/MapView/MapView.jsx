@@ -23,7 +23,7 @@ import zIndex from "@mui/material/styles/zIndex";
 const MapView = ({}) => {
   const [, setMarkers] = useState([]);
   const [markersData, setMarkersData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const calgaryCoords = [-114.0719, 51.0547];
   const [searchText, setSearchText] = useState("");
   const [toastOpen, setToastOpen] = React.useState(false);
@@ -72,8 +72,6 @@ const MapView = ({}) => {
   };
 
   useEffect(() => {
-    if (markersData.length === 0) return;
-
     const map = new mapboxgl.Map({
       container: "map",
       style: "mapbox://styles/mapbox/light-v10",
@@ -83,26 +81,43 @@ const MapView = ({}) => {
 
     map.on("load", () => {
       map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+      map.addControl(
+        new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            // When active the map will receive updates to the device's location as it changes.
+            trackUserLocation: true,
+            // Draw an arrow next to the location dot to indicate which direction the device is heading.
+            showUserHeading: true
+        }),
+         "bottom-right"
+    );
 
       const newMarkers = [];
       for (const markerData of markersData) {
+        // Create a HTML element for each feature
+        const el = document.createElement('div');
+        el.className = 'marker';
+        el.style.backgroundImage = `url(${markerData.url})`;
+
         const popup = new mapboxgl.Popup({
-          maxWidth: "400px",
+          maxWidth: "800px",
+          maxHeight: "800px",
           closeButton: false,
         }).setHTML(`
-          <div class="popup-card">
+          <div class="popup-card" style="text-align: center;">
             <img src="${markerData.url}" alt="picture" class="popup-image" />
-            <div class="popup-content">
-              <h2 style="margin: 0px">Location</h2>
-              <p style="margin: 0px; font-size: 14px; color: #979797;">
-                Coordinates: ${markerData.latitude}, ${markerData.longitude}
-              </p>
-            </div>
+          </div>
+          <div class="popup-content" style="text-align: center;">
+            <p style="margin: 0px; font-size: 14px; color: #979797;">
+              Coordinates: ${markerData.latitude}, ${markerData.longitude}
+            </p>
           </div>
         `);
-        const marker = new mapboxgl.Marker({
-          color: "red",
-        })
+
+        // Make a marker for each feature and add to the map
+        const marker = new mapboxgl.Marker(el)
           .setLngLat([markerData.latitude, markerData.longitude])
           .setPopup(popup)
           .addTo(map);
