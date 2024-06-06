@@ -73,7 +73,7 @@ export const LoginPrompt: React.FC = () => {
     if(!email.match("[a-zA-Z]+"))
       setError(true);
     else
-      history.push("/dashboard");
+      history.push({pathname: ("/dashboard"), state: {query: "text"}});
   }
 
   return (
